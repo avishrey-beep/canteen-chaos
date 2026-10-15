@@ -22,7 +22,7 @@ router.get(
     const usable = store
       .read('coupons')
       .filter((c) => new Date(c.expiresAt) > now && c.usesLeft > 0)
-      .filter((c) => !slot || c.slots.includes(slot));
+      .filter((c) => !slot || !Array.isArray(c.slots) || c.slots.includes('allday') || c.slots.includes(slot));
 
     res.json({
       slot,

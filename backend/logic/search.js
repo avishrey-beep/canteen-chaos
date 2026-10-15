@@ -76,12 +76,13 @@ function suggest(menu, query, limit = 6) {
 }
 
 const SORTERS = {
-  'price-asc': (a, b) => b.price - a.price,
-  'price-desc': (a, b) => a.price - b.price,
-  'rating-desc': (a, b) => b.rating - a.rating,
-  'name-asc': (a, b) => a.name.localeCompare(b.name),
-  'prep-asc': (a, b) => a.prepMinutes - b.prepMinutes,
-  popular: (a, b) => (b.orderCount || 0) - (a.orderCount || 0),
+  'price-asc': (a, b) => Number(a.price) - Number(b.price) || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+  'price-desc': (a, b) => Number(b.price) - Number(a.price) || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+  'rating-desc': (a, b) => Number(b.rating) - Number(a.rating) || (b.ratingCount || 0) - (a.ratingCount || 0) || a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+  'name-asc': (a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+  'name-desc': (a, b) => b.name.localeCompare(a.name, undefined, { sensitivity: 'base' }),
+  'prep-asc': (a, b) => Number(a.prepMinutes) - Number(b.prepMinutes) || a.name.localeCompare(b.name),
+  popular: (a, b) => (b.orderCount || 0) - (a.orderCount || 0) || (b.rating || 0) - (a.rating || 0),
   default: (a, b) => Number(b.orderable) - Number(a.orderable) || a.id - b.id,
 };
 
@@ -93,12 +94,12 @@ function sortDishes(dishes, sort) {
 /** Cut a list into one page and say whether there is another. */
 function paginate(list, page = 1, limit = 12) {
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
-  const perPage = Math.min(48, Math.max(1, parseInt(limit, 10) || 12));
+  const perPage = Math.min(100, Math.max(1, parseInt(limit, 10) || 48));
   const start = (pageNum - 1) * perPage;
   const items = list.slice(start, start + perPage);
 
   return {
-    items: list,
+    items,
     page: pageNum,
     limit: perPage,
     total: list.length,

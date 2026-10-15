@@ -4,7 +4,7 @@
     "type": "percent",
     "value": 10,
     "maxDiscount": 40,
-    "minOrder": 100,
+    "minOrder": 0,
     "vegOnly": false,
     "slots": [
       "breakfast",
@@ -13,30 +13,32 @@
       "allday"
     ],
     "expiresAt": "2027-12-31T23:59:59.000Z",
-    "usesLeft": 501,
-    "description": "10% off, up to Rs. 40"
+    "usesLeft": 500,
+    "description": "10% off on all orders (up to Rs. 40)"
   },
   {
     "code": "FLAT50",
     "type": "flat",
     "value": 50,
     "maxDiscount": 50,
-    "minOrder": 250,
+    "minOrder": 150,
     "vegOnly": false,
     "slots": [
+      "breakfast",
       "lunch",
-      "evening"
+      "evening",
+      "allday"
     ],
     "expiresAt": "2027-12-31T23:59:59.000Z",
     "usesLeft": 200,
-    "description": "Rs. 50 off on orders above Rs. 250"
+    "description": "Rs. 50 off on orders above Rs. 150"
   },
   {
     "code": "VEGDAY",
     "type": "percent",
     "value": 15,
     "maxDiscount": 60,
-    "minOrder": 120,
+    "minOrder": 0,
     "vegOnly": true,
     "slots": [
       "breakfast",
@@ -46,28 +48,14 @@
     ],
     "expiresAt": "2027-12-31T23:59:59.000Z",
     "usesLeft": 100,
-    "description": "15% off on fully vegetarian orders"
+    "description": "15% off on vegetarian orders"
   },
   {
     "code": "EARLYBIRD",
     "type": "percent",
     "value": 20,
     "maxDiscount": 50,
-    "minOrder": 60,
-    "vegOnly": false,
-    "slots": [
-      "breakfast"
-    ],
-    "expiresAt": "2027-12-31T23:59:59.000Z",
-    "usesLeft": 150,
-    "description": "20% off before 11 AM"
-  },
-  {
-    "code": "FRESHERS24",
-    "type": "flat",
-    "value": 30,
-    "maxDiscount": 30,
-    "minOrder": 100,
+    "minOrder": 0,
     "vegOnly": false,
     "slots": [
       "breakfast",
@@ -75,8 +63,42 @@
       "evening",
       "allday"
     ],
-    "expiresAt": "2024-09-30T23:59:59.000Z",
-    "usesLeft": 10,
-    "description": "Expired freshers offer"
+    "expiresAt": "2027-12-31T23:59:59.000Z",
+    "usesLeft": 150,
+    "description": "20% off (up to Rs. 50)"
+  },
+  {
+    "code": "FRESHERS",
+    "type": "flat",
+    "value": 20,
+    "maxDiscount": 20,
+    "minOrder": 0,
+    "vegOnly": false,
+    "slots": [
+      "breakfast",
+      "lunch",
+      "evening",
+      "allday"
+    ],
+    "expiresAt": "2027-12-31T23:59:59.000Z",
+    "usesLeft": 100,
+    "description": "Rs. 20 off for freshers"
+  },
+  {
+    "code": "FRESHERS24",
+    "type": "flat",
+    "value": 30,
+    "maxDiscount": 30,
+    "minOrder": 0,
+    "vegOnly": false,
+    "slots": [
+      "breakfast",
+      "lunch",
+      "evening",
+      "allday"
+    ],
+    "expiresAt": "2027-12-31T23:59:59.000Z",
+    "usesLeft": 50,
+    "description": "Rs. 30 off special offer"
   }
 ]

@@ -47,9 +47,15 @@ router.get(
 
     let dishes = allDishes(now);
 
-    if (veg === 'true') dishes = dishes.filter((d) => d.veg === true);
-    if (veg === 'false') dishes = dishes.filter((d) => d.veg === false);
-    if (category && category !== 'All') dishes = dishes.filter((d) => d.category === category);
+    if (veg === 'beverages') {
+      dishes = dishes.filter((d) => d.category === 'Beverages');
+    } else if (category === 'Beverages') {
+      dishes = dishes.filter((d) => d.category === 'Beverages');
+    } else {
+      if (category && category !== 'All') dishes = dishes.filter((d) => d.category === category);
+      if (veg === 'true') dishes = dishes.filter((d) => d.veg === true && d.category !== 'Beverages');
+      if (veg === 'false') dishes = dishes.filter((d) => d.veg === false && d.category !== 'Beverages');
+    }
     if (servedOnly === 'true') dishes = dishes.filter((d) => d.servedNow);
     if (tag) dishes = dishes.filter((d) => (d.tags || []).includes(tag));
     if (maxPrice) dishes = dishes.filter((d) => d.price <= Number(maxPrice));
@@ -109,8 +115,19 @@ router.get(
     const orders = store.read('orders');
     const memberId = req.get('X-Member-Id');
     const mine = memberId ? orders.filter((o) => o.memberId === memberId) : [];
+    const { veg, category } = req.query;
 
-    res.json({ picks: recommend.forMember(mine, orders, allDishes(now), 4) });
+    let dishes = allDishes(now);
+
+    if (veg === 'beverages' || category === 'Beverages') {
+      dishes = dishes.filter((d) => d.category === 'Beverages');
+    } else {
+      if (category && category !== 'All') dishes = dishes.filter((d) => d.category === category);
+      if (veg === 'true') dishes = dishes.filter((d) => d.veg === true && d.category !== 'Beverages');
+      if (veg === 'false') dishes = dishes.filter((d) => d.veg === false && d.category !== 'Beverages');
+    }
+
+    res.json({ picks: recommend.forMember(mine, orders, dishes, 4) });
   })
 );
 

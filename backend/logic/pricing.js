@@ -87,22 +87,34 @@ function applyCoupon(code, lines, coupons, { slot = null, now = new Date() } = {
   const coupon = coupons.find((c) => c.code.toUpperCase() === wanted);
   if (!coupon) return { valid: false, discount: 0, reason: 'Coupon not found' };
 
+  if (coupon.expiresAt && new Date(coupon.expiresAt) <= now) {
+    return { valid: false, discount: 0, reason: 'This coupon has expired' };
+  }
+
   if (coupon.usesLeft <= 0) {
     return { valid: false, discount: 0, reason: 'This coupon is fully used' };
   }
 
   const subtotal = sumLines(lines);
-  if (subtotal < coupon.minOrder) {
+  const minOrder = Number(coupon.minOrder) || 0;
+  if (minOrder > 0 && subtotal < minOrder) {
     return {
       valid: false,
       discount: 0,
-      reason: `Add Rs. ${round2(coupon.minOrder - subtotal)} more to use ${coupon.code}`,
+      reason: `Add Rs. ${round2(minOrder - subtotal)} more to use ${coupon.code}`,
     };
   }
   if (coupon.vegOnly && lines.some((l) => l.veg === false)) {
     return { valid: false, discount: 0, reason: `${coupon.code} works on veg-only orders` };
   }
-  if (slot && Array.isArray(coupon.slots) && !coupon.slots.includes(slot)) {
+  const slotMatches =
+    !slot ||
+    !Array.isArray(coupon.slots) ||
+    coupon.slots.length === 0 ||
+    coupon.slots.includes('allday') ||
+    coupon.slots.includes(slot);
+
+  if (!slotMatches) {
     return { valid: false, discount: 0, reason: `${coupon.code} is not valid right now` };
   }
 

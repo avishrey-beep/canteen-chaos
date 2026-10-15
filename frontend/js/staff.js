@@ -1,6 +1,73 @@
 /* staff.js - the counter dashboard: live queue, status buttons, stats,
    a small hourly bar strip, and stock control. */
 
+/* -------------------------------------------------------- PIN gate */
+// Bug #4: simple PIN gate - keeps students from accidentally (or intentionally)
+// accessing the counter. The PIN is checked client-side; the API should also
+// enforce a staff token server-side for a production deployment.
+const STAFF_PIN = '1234';   // ← change to match your deployed PIN
+const STAFF_SESSION_KEY = 'staffUnlocked';
+
+function isStaffUnlocked() {
+  return sessionStorage.getItem(STAFF_SESSION_KEY) === 'yes';
+}
+
+function unlockStaff() {
+  sessionStorage.setItem(STAFF_SESSION_KEY, 'yes');
+}
+
+function showStaffGate(show) {
+  const gate = $('#staffGate');
+  if (gate) gate.hidden = !show;
+}
+
+/* ---------------------------------------------------- gate events */
+
+const staffPinInput = $('#staffPinInput');
+const staffPinError = $('#staffPinError');
+const staffPinBtn = $('#staffPinBtn');
+
+function tryUnlock() {
+  const entered = staffPinInput ? staffPinInput.value.trim() : '';
+  if (entered === STAFF_PIN) {
+    unlockStaff();
+    showStaffGate(false);
+    startStaffLoop();
+    loadStock();
+    if (staffPinInput) staffPinInput.value = '';
+    if (staffPinError) staffPinError.hidden = true;
+  } else {
+    if (staffPinError) {
+      staffPinError.textContent = 'Incorrect PIN. Try again.';
+      staffPinError.hidden = false;
+    }
+    if (staffPinInput) staffPinInput.value = '';
+  }
+}
+
+if (staffPinBtn) staffPinBtn.addEventListener('click', tryUnlock);
+if (staffPinInput) {
+  staffPinInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') tryUnlock();
+  });
+}
+
+/* ------------------------------------------------------- on enter */
+// Called by router when #/staff is activated
+function initStaffView() {
+  if (isStaffUnlocked()) {
+    showStaffGate(false);
+    startStaffLoop();
+    loadStock();
+  } else {
+    showStaffGate(true);
+    stopStaffLoop();
+    if (staffPinInput) staffPinInput.focus();
+  }
+}
+
+/* ----------------------------------------------------------- rest of staff */
+
 const staffRows = $('#staffRows');
 const statRow = $('#statRow');
 const stockList = $('#stockList');

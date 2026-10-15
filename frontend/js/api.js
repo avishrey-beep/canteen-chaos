@@ -133,12 +133,12 @@ const api = {
   getMenu: (params = {}) => request('/menu' + query(params), { key: 'menu' }),
   suggest: (q) => request('/menu/suggest' + query({ q }), { key: 'suggest' }),
   getCategories: () => request('/menu/categories', { cacheable: true }),
-  getPicks: () => request('/menu/picks', { cacheable: true }),
+  getPicks: (params = {}) => request('/menu/picks' + query(params), { key: 'picks' }),
   getDish: (id) => request(`/menu/${id}`, { key: 'dish' }),
 
   /* cart and checkout */
   quote: (payload) => request('/cart/quote', { method: 'POST', body: payload, key: 'quote' }),
-  getCoupons: () => request('/coupons', { cacheable: true }),
+  getCoupons: () => request('/coupons', { key: 'coupons' }),
   getPickupSlots: () => request('/pickup-slots', { key: 'slots' }),
   getMember: (id) => request(`/members/${id}`, { key: 'member' }),
 

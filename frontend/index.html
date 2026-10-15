@@ -10,7 +10,7 @@
 </head>
 <body>
 
-<a class="skip-link" href="#menu">Skip to menu</a>
+<a class="skip-link" href="#menu" id="skipLink">Skip to menu</a>
 
 <header class="site-header">
   <div class="wrap header-inner">
@@ -47,7 +47,7 @@
         <input type="search" id="searchInput" class="search" autocomplete="off"
                placeholder="Search dishes, categories, tags...   (press /)"
                aria-label="Search dishes" role="combobox" aria-expanded="false"
-               aria-controls="suggestBox" />
+               aria-autocomplete="list" aria-controls="suggestBox" />
         <div class="suggest-box" id="suggestBox" role="listbox" hidden></div>
       </div>
 
@@ -62,9 +62,10 @@
       </select>
 
       <div class="chips" role="group" aria-label="Filter dishes">
-        <button class="chip active" data-veg="all">All</button>
-        <button class="chip" data-veg="true">Veg</button>
-        <button class="chip" data-veg="false">Non-veg</button>
+        <button class="chip active" data-veg="all" aria-pressed="true">All</button>
+        <button class="chip" data-veg="true" aria-pressed="false">Veg</button>
+        <button class="chip" data-veg="false" aria-pressed="false">Non-veg</button>
+        <button class="chip" data-veg="beverages" aria-pressed="false">Beverages</button>
         <button class="chip toggle" id="servedOnlyChip" aria-pressed="false">Served now</button>
       </div>
 
@@ -78,7 +79,7 @@
     <div class="wrap cat-tabs" id="catTabs"></div>
   </div>
 
-  <main class="wrap" id="menu">
+  <main class="wrap" id="menu" tabindex="-1">
     <section class="picks" hidden>
       <h2 class="picks-title">Picked for you</h2>
       <div class="picks-strip" id="picksStrip"></div>
@@ -111,6 +112,18 @@
 
 <!-- =========================================================== STAFF -->
 <section class="view" id="view-staff" hidden>
+  <!-- Bug #4 fix: PIN gate so random students can't operate the counter -->
+  <div class="staff-gate" id="staffGate">
+    <div class="staff-gate-box">
+      <h2>Staff access only</h2>
+      <p>Enter the counter PIN to continue.</p>
+      <input type="password" id="staffPinInput" class="field-input" maxlength="6"
+             placeholder="PIN" aria-label="Staff PIN" autocomplete="off" />
+      <small class="field-error" id="staffPinError" hidden></small>
+      <button class="primary-btn" id="staffPinBtn">Unlock</button>
+    </div>
+  </div>
+
   <main class="wrap">
     <div class="list-head">
       <h1 class="page-title">Counter Dashboard</h1>
@@ -122,6 +135,7 @@
           <option value="preparing">Preparing</option>
           <option value="ready">Ready</option>
           <option value="picked">Picked</option>
+          <option value="cancelled">Cancelled</option>
         </select>
         <label class="live-toggle">
           <input type="checkbox" id="liveToggle" checked /> Auto refresh
@@ -213,7 +227,7 @@
     <h3>Where and what</h3>
     <label class="field">
       <span>Deliver to room (optional)</span>
-      <input type="text" id="roomInput" placeholder="B-204" maxlength="5" autocomplete="off" />
+      <input type="text" id="roomInput" placeholder="B-204" maxlength="8" autocomplete="off" />
       <small class="field-error" id="roomError" hidden></small>
     </label>
 
@@ -231,7 +245,7 @@
       <button class="tip-chip" data-tip="5">5%</button>
       <button class="tip-chip" data-tip="10">10%</button>
       <button class="tip-chip" data-tip="15">15%</button>
-      <input type="number" id="tipFlatInput" class="tip-flat" min="0" max="100"
+      <input type="number" id="tipFlatInput" class="tip-flat" min="0" max="100" step="1"
              placeholder="Rs." aria-label="Custom tip amount" />
     </div>
   </section>
@@ -276,7 +290,7 @@
   <button class="icon-btn modal-close" data-close-modal="ratingModal" aria-label="Close">&times;</button>
   <h2 id="ratingTitle">How was it?</h2>
   <div id="ratingBody"></div>
-  <button class="primary-btn" id="submitRatingBtn">Submit</button>
+  <button class="primary-btn" id="submitRatingBtn" disabled>Submit</button>
 </div>
 
 <div class="toasts" id="toasts" aria-live="polite"></div>

@@ -41,7 +41,7 @@ function renderDishDetail(dish) {
     ? dish.alsoBought
         .map(
           (d) => html`<button class="also-card" data-open="${d.id}">
-            <img src="${d.image}" alt="" />
+            <img src="${d.image}" alt="" onerror="this.onerror=null;this.src='img/dish-1.jpg'" />
             <span class="also-name">${d.name}</span>
             <span class="also-price">${rupees(d.price)}</span>
           </button>`
@@ -57,7 +57,7 @@ function renderDishDetail(dish) {
   render(
     dishBody,
     html`<div class="dish-detail">
-      <img class="detail-img" src="${dish.image}" alt="${dish.name}" />
+      <img class="detail-img" src="${dish.image}" alt="${dish.name}" onerror="this.onerror=null;this.src='img/dish-1.jpg'" />
 
       <div class="detail-head">
         <h2 id="dishModalTitle">${dish.name}</h2>
@@ -66,7 +66,7 @@ function renderDishDetail(dish) {
       </div>
 
       <div class="dish-meta">
-        <span class="veg-dot ${dish.veg ? '' : 'nonveg'}"></span>
+        ${raw(dish.category === 'Beverages' ? '<span class="bev-icon" title="Beverage">☕</span>' : `<span class="veg-dot ${dish.veg ? '' : 'nonveg'}"></span>`)}
         <span>${dish.category}</span>
         <span>~${dish.prepMinutes} min</span>
         ${raw(dish.spicy ? '<span class="spicy">&#127798;</span>' : '')}

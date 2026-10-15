@@ -243,6 +243,9 @@ async function openRating(token) {
     );
 
     openModal('ratingModal');
+    // Bug #10: reset submit to disabled until a star is picked
+    const submitBtn = $('#submitRatingBtn');
+    if (submitBtn) submitBtn.disabled = true;
   } catch (err) {
     toast(err.message, 'bad');
   }
@@ -256,6 +259,10 @@ delegate('#ratingBody', '.star', 'click', (e, node) => {
   $$(`.star[data-dish="${dishId}"]`).forEach((s) =>
     s.classList.toggle('on', Number(s.dataset.star) <= stars)
   );
+
+  // Bug #10: enable the submit button once at least one dish has a rating
+  const submitBtn = $('#submitRatingBtn');
+  if (submitBtn) submitBtn.disabled = Object.keys(ratingDraft.stars).length === 0;
 });
 
 $('#submitRatingBtn').addEventListener('click', async () => {

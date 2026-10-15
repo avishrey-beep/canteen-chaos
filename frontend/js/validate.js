@@ -20,7 +20,8 @@ const RULES = {
   tip: {
     min: 0,
     max: 100,
-    message: 'Tip must be between Rs. 0 and Rs. 100',
+    integer: true,
+    message: 'Tip must be a whole number between Rs. 0 and Rs. 100',
   },
   stock: {
     min: 0,

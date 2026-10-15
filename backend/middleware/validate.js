@@ -66,7 +66,7 @@ function validateBody(schema) {
 }
 
 /** Pull page/limit/sort out of a query string, with sane defaults. */
-function parseListQuery(query = {}, { defaultLimit = 12, maxLimit = 48 } = {}) {
+function parseListQuery(query = {}, { defaultLimit = 50, maxLimit = 100 } = {}) {
   const page = Math.max(1, parseInt(query.page, 10) || 1);
   const limit = Math.min(maxLimit, Math.max(1, parseInt(query.limit, 10) || defaultLimit));
   return { page, limit, sort: query.sort || 'default' };

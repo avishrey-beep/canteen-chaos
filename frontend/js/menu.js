@@ -27,6 +27,7 @@ async function loadMenu({ append = false } = {}) {
     state.page = 1;
     menuGrid.innerHTML = skeletonCards(8);
     hideStatus(menuStatus);
+    loadPicks();
   }
 
   try {
@@ -38,7 +39,7 @@ async function loadMenu({ append = false } = {}) {
       servedOnly: state.filters.servedOnly ? 'true' : '',
       maxPrice: state.filters.maxPrice,
       page: state.page,
-      limit: 5,
+      limit: 50,
     });
 
     if (myRequest !== menuRequestId) return; // a newer search already won
@@ -91,15 +92,34 @@ async function loadCategories() {
 
 async function loadPicks() {
   try {
-    const { picks } = await api.getPicks();
+    const { picks } = await api.getPicks({
+      veg: state.filters.veg,
+      category: state.filters.category,
+    });
     state.picks = picks;
 
-    if (picks.length === 0) return show(picksStrip.parentElement, false);
+    const filtered = (picks || []).filter((d) => {
+      if (state.filters.veg === 'beverages' || state.filters.category === 'Beverages') {
+        return d.category === 'Beverages';
+      }
+      if (state.filters.veg === 'true') {
+        return d.veg === true && d.category !== 'Beverages';
+      }
+      if (state.filters.veg === 'false') {
+        return d.veg === false && d.category !== 'Beverages';
+      }
+      if (state.filters.category && state.filters.category !== 'All') {
+        return d.category === state.filters.category;
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) return show(picksStrip.parentElement, false);
 
     show(picksStrip.parentElement, true);
     render(
       picksStrip,
-      picks
+      filtered
         .map(
           (d) => html`<button class="pick-chip" data-id="${d.id}">
               <span class="pick-name">${d.name}</span>
@@ -126,11 +146,7 @@ function renderMenu() {
 
   hideStatus(menuStatus);
   menuGrid.innerHTML = state.dishes.map(dishCard).join('');
-  const prices = state.dishes.map((d) => Number(d.price)).filter((p) => !Number.isNaN(p));
-  const priceNote = prices.length
-    ? ` · first ${rupees(prices[0])} · last ${rupees(prices[prices.length - 1])}`
-    : '';
-  resultCount.textContent = `Showing ${state.dishes.length} dishes · requested page size 5 · total ${state.total}${priceNote}`;
+  resultCount.textContent = `Showing ${state.dishes.length} ${state.dishes.length === 1 ? 'dish' : 'dishes'}`;
   show(loadMoreBtn, state.hasMore);
 }
 
@@ -164,7 +180,7 @@ function dishCard(dish) {
 
   return html`<article class="dish-card ${dish.orderable ? '' : 'blocked'}" data-id="${dish.id}">
     <div class="img-wrap">
-      <img src="${dish.image}" alt="${dish.name}" loading="lazy" data-action="open" />
+      <img src="${dish.image}" alt="${dish.name}" loading="lazy" data-action="open" onerror="this.onerror=null;this.src='img/dish-1.jpg'" />
       ${raw(badgeFor(dish))}
       <button class="fav-btn ${fav ? 'on' : ''}" data-action="fav"
               aria-pressed="${fav}" aria-label="Save ${dish.name}">&#9733;</button>
@@ -174,7 +190,7 @@ function dishCard(dish) {
       <h3 class="dish-name"><button class="name-btn" data-action="open">${dish.name}</button></h3>
 
       <div class="dish-meta">
-        <span class="veg-dot ${dish.veg ? '' : 'nonveg'}" title="${dish.veg ? 'Veg' : 'Non-veg'}"></span>
+        ${raw(dish.category === 'Beverages' ? '<span class="bev-icon" title="Beverage">☕</span>' : `<span class="veg-dot ${dish.veg ? '' : 'nonveg'}" title="${dish.veg ? 'Veg' : 'Non-veg'}"></span>`)}
         <span>${dish.category}</span>
         <span class="rating">&#9733; ${dish.rating}${dish.ratingCount ? ` (${dish.ratingCount})` : ''}</span>
         ${raw(dish.spicy ? '<span class="spicy" title="Spicy">&#127798;</span>' : '')}
@@ -255,6 +271,23 @@ delegate(catTabs, '.cat-tab', 'click', (e, node) => {
   $$('.cat-tab', catTabs).forEach((t) => t.classList.remove('active'));
   node.classList.add('active');
   state.filters.category = node.dataset.cat;
+
+  if (node.dataset.cat === 'Beverages') {
+    $$('.chip[data-veg]').forEach((c) => {
+      const isBev = c.dataset.veg === 'beverages';
+      c.classList.toggle('active', isBev);
+      c.setAttribute('aria-pressed', String(isBev));
+    });
+    state.filters.veg = 'beverages';
+  } else if (state.filters.veg === 'beverages') {
+    $$('.chip[data-veg]').forEach((c) => {
+      const isAll = c.dataset.veg === 'all';
+      c.classList.toggle('active', isAll);
+      c.setAttribute('aria-pressed', String(isAll));
+    });
+    state.filters.veg = 'all';
+  }
+
   loadMenu();
 });
 
@@ -286,6 +319,7 @@ const runSuggest = debounce(async () => {
 
     suggestIndex = -1;
     show(suggestBox, true);
+    searchInput.setAttribute('aria-expanded', 'true');
   } catch (e) {
     hideSuggestions();
   }
@@ -295,6 +329,7 @@ function hideSuggestions() {
   show(suggestBox, false);
   suggestBox.innerHTML = '';
   suggestIndex = -1;
+  searchInput.setAttribute('aria-expanded', 'false');
 }
 
 searchInput.addEventListener('input', () => {
@@ -338,9 +373,26 @@ $('#sortSelect').addEventListener('change', (e) => {
 });
 
 delegate('.chips', '.chip[data-veg]', 'click', (e, node) => {
-  $$('.chip[data-veg]').forEach((c) => c.classList.remove('active'));
+  $$('.chip[data-veg]').forEach((c) => {
+    c.classList.remove('active');
+    c.setAttribute('aria-pressed', 'false');
+  });
   node.classList.add('active');
+  node.setAttribute('aria-pressed', 'true');
   state.filters.veg = node.dataset.veg;
+
+  if (node.dataset.veg === 'beverages') {
+    $$('.cat-tab', catTabs).forEach((t) => {
+      t.classList.toggle('active', t.dataset.cat === 'Beverages');
+    });
+    state.filters.category = 'Beverages';
+  } else if (state.filters.category === 'Beverages') {
+    $$('.cat-tab', catTabs).forEach((t) => {
+      t.classList.toggle('active', t.dataset.cat === 'All');
+    });
+    state.filters.category = 'All';
+  }
+
   loadMenu();
 });
 

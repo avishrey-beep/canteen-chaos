@@ -68,17 +68,21 @@ function renderBill(quote) {
   toggleRow('#rushRow', '#rushValue', quote && quote.rushSurcharge, false);
   toggleRow('#tipRow', '#tipValue', quote && quote.tip, false);
 
-  if (quote && quote.couponCode) setText('#couponLabel', `Coupon ${quote.couponCode}`);
+  if (quote && quote.couponCode) {
+    setText('#couponLabel', `Coupon (${quote.couponCode})`);
+  } else {
+    setText('#couponLabel', 'Coupon');
+  }
   setText('#earnNote', quote ? `You will earn ${quote.pointsEarned} points` : '');
 
   if (!quote) return (couponMsg.hidden = true);
 
   if (quote.couponError && state.checkout.couponCode) {
-    couponMsg.textContent = quote.couponError;
+    couponMsg.innerHTML = html`<span class="coupon-err-text">${quote.couponError}</span> <button type="button" class="link-btn small remove-coupon-btn" id="removeCouponBtn" style="color:var(--red);margin-left:8px;cursor:pointer;">Remove</button>`;
     couponMsg.className = 'coupon-msg bad';
     couponMsg.hidden = false;
-  } else if (quote.couponCode) {
-    couponMsg.textContent = `${quote.couponCode} applied`;
+  } else if (quote.couponCode && quote.couponDiscount > 0) {
+    couponMsg.innerHTML = html`<span class="coupon-ok-text">&#10003; ${quote.couponCode} applied (- ${rupees(quote.couponDiscount)})</span> <button type="button" class="link-btn small remove-coupon-btn" id="removeCouponBtn" style="color:var(--muted);margin-left:8px;cursor:pointer;">Remove</button>`;
     couponMsg.className = 'coupon-msg good';
     couponMsg.hidden = false;
   } else {
@@ -155,6 +159,10 @@ function openCart() {
   cartPanel.hidden = false;
   cartOverlay.hidden = false;
   document.body.classList.add('no-scroll');
+  loadCouponHints();
+  if (state.checkout.couponCode) {
+    couponInput.value = state.checkout.couponCode;
+  }
   refreshQuote();
 }
 
@@ -200,8 +208,26 @@ couponInput.addEventListener('keydown', (e) => {
   if (e.key === 'Enter') applyCoupon();
 });
 
+delegate(cartPanel, '#removeCouponBtn', 'click', (e) => {
+  e.preventDefault();
+  couponInput.value = '';
+  setCheckout({ couponCode: null });
+  couponMsg.hidden = true;
+  refreshQuote();
+  toast('Coupon removed', 'info');
+});
+
 function applyCoupon() {
-  const result = checkField('coupon', couponInput.value);
+  const rawValue = (couponInput.value || '').trim();
+
+  if (!rawValue) {
+    setCheckout({ couponCode: null });
+    couponMsg.hidden = true;
+    refreshQuote();
+    return;
+  }
+
+  const result = checkField('coupon', rawValue);
 
   if (!result.ok) {
     couponMsg.textContent = result.message;
@@ -210,7 +236,8 @@ function applyCoupon() {
     return;
   }
 
-  setCheckout({ couponCode: result.value || null });
+  couponInput.value = result.value;
+  setCheckout({ couponCode: result.value });
   refreshQuote();
 }
 

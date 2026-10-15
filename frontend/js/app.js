@@ -20,8 +20,8 @@ defineRoute('orders', {
 defineRoute('staff', {
   title: 'Counter',
   enter: () => {
-    startStaffLoop();
-    loadStock();
+    // Bug #4: initStaffView handles PIN gate + dashboard startup
+    initStaffView();
   },
   leave: stopStaffLoop,
 });
@@ -34,11 +34,13 @@ const siteNav = $('#siteNav');
 navToggle.addEventListener('click', () => {
   const open = siteNav.classList.toggle('open');
   navToggle.setAttribute('aria-expanded', String(open));
+  navToggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
 });
 
 delegate(siteNav, '.nav-link', 'click', () => {
   siteNav.classList.remove('open');
   navToggle.setAttribute('aria-expanded', 'false');
+  navToggle.setAttribute('aria-label', 'Open menu');
 });
 
 /* ----------------------------------------------------------- theme */
@@ -102,6 +104,17 @@ window.addEventListener('online', () => {
   applyRoute();
   loadMenu();
 });
+
+/* ------------------------------------------------- skip link */
+// Bug #1: prevent hash change; just focus the menu content
+const skipLink = $('#skipLink');
+if (skipLink) {
+  skipLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    const target = document.getElementById('menu');
+    if (target) target.focus();
+  });
+}
 
 /* ------------------------------------------------------------ boot */
 
